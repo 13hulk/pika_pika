@@ -6,7 +6,7 @@ from pika_pika.consumers.config import connection_parameters
 from pika_pika.consumers.consumer import Consumer
 
 
-class JobConsumer(Consumer):
+class ExampleConsumer(Consumer):
     def __init__(
         self,
         queue_name: str,
@@ -23,18 +23,17 @@ class JobConsumer(Consumer):
         """
         try:
             message = json.loads(message)
-            print(message)
-
+            print(f"Message: {message}")
         except json.JSONDecodeError:
-            return False
+            print(f"Message: {message}")
 
         return True
 
 
 if __name__ == "__main__":
-    job_consumer = JobConsumer(
-        queue_name="test-queue",
+    example_consumer = ExampleConsumer(
+        queue_name="example-queue",
         parameters=connection_parameters.parameters,
-        exchange_name="test-exchange",
+        exchange_name="example-exchange",
     )
-    job_consumer.consume_forever()
+    example_consumer.consume_forever()
