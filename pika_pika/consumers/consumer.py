@@ -1,4 +1,5 @@
 import time
+import traceback
 from abc import ABC, abstractmethod
 from typing import Union
 
@@ -31,6 +32,7 @@ class Consumer(ABC):
             or self._connection.is_closed
             or not self._connection.is_open
         ):
+            print(f"Creating the connection...")
             self._connection = pika.BlockingConnection(self._parameters)
 
         return self._connection
@@ -42,22 +44,26 @@ class Consumer(ABC):
             or self._channel.is_closed
             or not self._channel.is_open
         ):
+            print(f"Creating the channel...")
             self._channel = self.connection.channel()
 
-            self.channel.exchange_declare(
+            print(f"Declaring the exchange...")
+            self._channel.exchange_declare(
                 exchange=self._exchange_name, exchange_type=self._exchange_type
             )
-            self.channel.queue_declare(queue=self._queue_name, durable=True)
-            self.channel.queue_bind(
+            print(f"Declaring the queue...")
+            self._channel.queue_declare(queue=self._queue_name, durable=True)
+            self._channel.queue_bind(
                 exchange=self._exchange_name,
                 queue=self._queue_name,
                 routing_key=self._queue_name,
             )
-            self.channel.basic_qos(prefetch_count=1)
+            self._channel.basic_qos(prefetch_count=1)
 
         return self._channel
 
     def _acknowledge(self, method: pika.spec.Basic.GetOk):
+        print(f"Acknowledging with the delivery tag ...")
         self.channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def consume(self):
@@ -71,6 +77,7 @@ class Consumer(ABC):
             return
 
         # else:
+        print(f"New message arrived!...")
         success = self.callback(message=body, method=method)
 
         # Acknowledge only if the callback was successful.
@@ -79,6 +86,7 @@ class Consumer(ABC):
             self._acknowledge(method=method)
 
     def consume_forever(self):
+        print(f"Starting the consumer on a loop...")
         while True:
             try:
                 self.consume()
@@ -93,6 +101,8 @@ class Consumer(ABC):
                 break
 
             except Exception as error:
+                print(f"{error.__class__.__name__} while handling the message.")
+                traceback.print_exc()
                 # Retry
                 continue
 
