@@ -1,0 +1,9 @@
+from environs import Env
+
+env = Env()
+
+RABBITMQ_HOST: str = env.str("RABBITMQ_HOST")
+RABBITMQ_PASSWORD: str = env.str("RABBITMQ_PASSWORD")
+RABBITMQ_PORT: str = env.str("RABBITMQ_PORT")
+RABBITMQ_USERNAME: str = env.str("RABBITMQ_USERNAME")
+RABBITMQ_VIRTUAL_HOST: str = env.str("RABBITMQ_VIRTUAL_HOST")
